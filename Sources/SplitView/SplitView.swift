@@ -73,6 +73,17 @@ public struct SplitView<ControlView: View, TopContent: View, BottomContent: View
     public var topView: () -> TopContent
     public var bottomView: () -> BottomContent
 
+    public init(
+        viewModel: SliderControlViewModel,
+        controlView: @escaping () -> ControlView,
+        topView: @escaping () -> TopContent,
+        bottomView: @escaping () -> BottomContent) {
+        self.viewModel = viewModel
+        self.controlView = controlView
+        self.topView = topView
+        self.bottomView = bottomView
+    }
+
     public var body: some View {
         GeometryReader { geometry in
             ZStack {
