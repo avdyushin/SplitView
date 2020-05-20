@@ -2,6 +2,8 @@
 
 Split View component for SwiftUI that allows to have two manually resizable views.
 
+<img src="https://raw.githubusercontent.com/avdyushin/SplitView/master/Assets/SplitView.gif" width="200px" />
+
 ### How to use?
 
 Create `SliderControlViewModel` with middle position as protortion of full height
