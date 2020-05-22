@@ -20,6 +20,10 @@ public class SliderControlViewModel: ObservableObject {
     public var range: ClosedRange<CGFloat>
 
     public init(middle: CGFloat = 0.5, range: ClosedRange<CGFloat> = 0.2...0.8) {
+        precondition(range.lowerBound >= 0, "Range lower bound must be positive")
+        precondition(range.upperBound >= 0, "Range upper bound must be positive")
+        precondition(range.lowerBound < middle && range.upperBound > middle, "Middle value must be in range: \(range)")
+
         self.middle = middle
         self.range = range
     }
@@ -30,12 +34,19 @@ struct SliderControl<Content: View>: View {
     @ObservedObject var viewModel: SliderControlViewModel
 
     var geometry: GeometryProxy
-    let content: () -> Content
+    let content: Content
+
+    public init(
+        viewModel: SliderControlViewModel,
+        geometry: GeometryProxy,
+        @ViewBuilder content: () -> Content) {
+        self.viewModel = viewModel
+        self.content = content()
+        self.geometry = geometry
+    }
 
     var body: some View {
-        VStack {
-            content()
-        }
+        VStack { content }
         .offset(y: geometry.size.height * (0.5 - viewModel.middle) + viewModel.current)
         .gesture(
             DragGesture()
@@ -69,19 +80,19 @@ public struct SplitView<ControlView: View, TopContent: View, BottomContent: View
 
     @ObservedObject public var viewModel: SliderControlViewModel
 
-    public var controlView: () -> ControlView
-    public var topView: () -> TopContent
-    public var bottomView: () -> BottomContent
+    public var controlView: ControlView
+    public var topView: TopContent
+    public var bottomView: BottomContent
 
     public init(
         viewModel: SliderControlViewModel,
-        controlView: @escaping () -> ControlView,
-        topView: @escaping () -> TopContent,
-        bottomView: @escaping () -> BottomContent) {
+        @ViewBuilder controlView: () -> ControlView,
+        @ViewBuilder topView: () -> TopContent,
+        @ViewBuilder bottomView: () -> BottomContent) {
         self.viewModel = viewModel
-        self.controlView = controlView
-        self.topView = topView
-        self.bottomView = bottomView
+        self.controlView = controlView()
+        self.topView = topView()
+        self.bottomView = bottomView()
     }
 
     public var body: some View {
@@ -89,18 +100,18 @@ public struct SplitView<ControlView: View, TopContent: View, BottomContent: View
             ZStack {
                 VStack {
                     Group {
-                        self.topView()
+                        self.topView
                             .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                     }
                     Group {
-                        self.bottomView()
+                        self.bottomView
                             .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                             .frame(height: geometry.size.height * self.viewModel.middle - self.viewModel.current)
                     }
                 }
                 SliderControl(viewModel: self.viewModel, geometry: geometry) {
                     Group {
-                        self.controlView()
+                        self.controlView
                     }
                 }
             } // ZStack
